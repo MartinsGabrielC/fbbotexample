@@ -38,7 +38,7 @@ app.post('/webhook', function (req, res) {
       //Iterate over each messsaging event
       pageEntry.messaging.forEach(function(messagingEvent){
         if (messagingEvent.message){
-          receivedMessage(messagingEvent);
+          sendMessage(messagingEvent.sender.id, {text: "echo: " + messagingEvent.message.text});
         }else {
           console.log("Webhook received unknown messagingEvent: ", messagingEvent);
         }
