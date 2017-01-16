@@ -117,7 +117,7 @@ function sendImageMessage(recipientID){
       attachment: {
         type: "image",
         payload: {
-          url: SERVER_URL + "/media/like.png"
+          url: SERVER_URL + "like.png"
         }
       }
     }
