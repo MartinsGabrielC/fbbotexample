@@ -11,6 +11,32 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.listen((process.env.PORT || 3000));
 
+// App Secret can be retrieved from the App Dashboard
+const APP_SECRET = (process.env.MESSENGER_APP_SECRET) ?
+  process.env.MESSENGER_APP_SECRET :
+  config.get('appSecret');
+
+// Arbitrary value used to validate a webhook
+const VALIDATION_TOKEN = (process.env.MESSENGER_VALIDATION_TOKEN) ?
+  (process.env.MESSENGER_VALIDATION_TOKEN) :
+  config.get('validationToken');
+
+// Generate a page access token for your page from the App Dashboard
+const PAGE_ACCESS_TOKEN = (process.env.MESSENGER_PAGE_ACCESS_TOKEN) ?
+  (process.env.MESSENGER_PAGE_ACCESS_TOKEN) :
+  config.get('pageAccessToken');
+
+// URL where the app is running (include protocol). Used to point to scripts and
+// assets located at this address.
+const SERVER_URL = (process.env.SERVER_URL) ?
+  (process.env.SERVER_URL) :
+  config.get('serverURL');
+
+if (!(APP_SECRET && VALIDATION_TOKEN && PAGE_ACCESS_TOKEN && SERVER_URL)) {
+  console.error("Missing config values");
+  process.exit(1);
+}
+
 //Server Frontpage
 app.get('/',function(req, res){
   res.send('This is TestBot Server');
@@ -18,10 +44,11 @@ app.get('/',function(req, res){
 
 //Facebook Webhook
 app.get('/webhook', function(req, res){
-  if(req.query['hub.verify_token'] === 'testbot_verify_token'){
-    res.send(req.query['hub.challenge']);
+  if(req.query['hub.verify_token'] === VALIDATION_TOKEN){
+    res.status(200).send(req.query['hub.challenge']);
   }else{
-    res.send('Invalid verify token');
+    console.error("Failed validation. Make sure the validation tokens match.");
+    res.sendStatus(403);
   }
 });
 
@@ -38,35 +65,24 @@ app.post('/webhook', function (req, res) {
       //Iterate over each messsaging event
       pageEntry.messaging.forEach(function(messagingEvent){
         if (messagingEvent.message){
-          sendMessage(messagingEvent.sender.id, {text: "echo: " + messagingEvent.message.text});
+          receivedMessage(messagingEvent);
         }else if(messagingEvent.postback){
-            receivedPostback(messagingEvent);
+          receivedPostback(messagingEvent);
         }else {
           console.log("Webhook received unknown messagingEvent: ", messagingEvent);
         }
       });
     });
   }
-  // var events = req.body.entry[0].messaging;
-  // for (i = 0; i < events.length; i++) {
-  //     var event = events[i];
-  //     if (event.message && event.message.text) {
-  //         sendMessage(event.sender.id, {text: "Echo: " + event.message.text});
-  //     }
-  // }
   res.sendStatus(200);
 });
 
-//Generic message sending function
-function sendMessage(recipientId, message) {
+function sendAPI(messageData){
   request({
       url: 'https://graph.facebook.com/v2.6/me/messages',
-      qs: {access_token: process.env.PAGE_ACCESS_TOKEN},
+      qs: {access_token: PAGE_ACCESS_TOKEN},
       method: 'POST',
-      json: {
-          recipient: {id: recipientId},
-          message: message,
-      }
+      json: messageData
     }, function(error, response, body) {
       if (error) {
           console.log('Error sending message: ', error);
@@ -74,7 +90,82 @@ function sendMessage(recipientId, message) {
           console.log('Error: ', response.body.error);
       }
     });
-};
+}
+
+//Generic message sending function
+function sendTextMessage(recipientId, message) {
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      text: message
+    }
+  };
+
+  sendAPI(messageData);
+}
+
+function sendImageMessage(recipientID){
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      attachment: {
+        type: "image",
+        payload: {
+          url: SERVER_URL + "/media/a.png"
+        }
+      }
+    }
+  };
+
+  sendAPI(messageData);
+}
+
+function sendGifMessage(recipientID){
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      attachment: {
+        type: "image",
+        payload: {
+          url: SERVER_URL + "/media/instagram_logo.gif"
+        }
+      }
+    }
+  };
+
+  sendAPI(messageData);
+}
+
+function receivedMessage(event){
+  var senderID = event.sender.id;
+  var recipientID = event.recipient.id;
+  var timeOfMessage = event.timestamp;
+  var message = envent.message;
+
+  console.log("Received message from user %d for page %d at %d with message: ", senderID,recipientID,timeOfMessage);
+  console.log(JSON.stringify(message));
+
+  var messageText = message.text;
+  var messageAttachments = message.attachments;
+  if(messageText){
+    switch (messageText) {
+      case 'img':
+        sendImageMessage(senderID);
+        break;
+      case 'gif':
+        sendGifMessage(senderID);
+        break;
+      default:
+        sendTextMessage(senderID,message);
+    }
+  }
+}
 
 function receivedPostback(event) {
   var senderID = event.sender.id;
@@ -91,6 +182,7 @@ function receivedPostback(event) {
   // When a postback is called, we'll send a message back to the sender to
   // let them know it was successful
   if (payload === "GET_STARTED"){
-    sendMessage(senderID,{text: "Welcome to the bot example. Let's get started!"});
+    sendTextMessage(senderID,"Welcome to the bot example. Let's get started!");
+    sendTextMessage(senderID,"Message: \n\"img\" to receive a image message\n\"gif\" to receiva a gif message");
   }
 }
