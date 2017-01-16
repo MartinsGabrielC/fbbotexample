@@ -144,6 +144,59 @@ function sendGifMessage(recipientID){
   sendAPI(messageData);
 }
 
+function sendAudioMessage(recipientID){
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      attachment: {
+        type: "audio",
+        payload: {
+          url: SERVER_URL + "sample.mp3"
+        }
+      }
+    }
+  };
+
+  sendAPI(messageData);
+}
+
+function sendVideoMessage(recipientID){
+  var messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      attachment: {
+        type: "video",
+        payload: {
+          url: SERVER_URL + "allofus480.mov"
+        }
+      }
+    }
+  };
+
+  sendAPI(messageData);
+}
+
+function sendFileMessage(recipientID){
+  var messageData = {
+    recipient: {
+      id: recipientID
+    },
+    message: {
+      attachment:{
+        type: "file",
+        payload: {
+          url: SERVER_URL + "test.txt"
+        }
+      }
+    }
+  };
+  sendAPI(messageData);
+}
+
 function receivedMessage(event){
   var senderID = event.sender.id;
   var recipientID = event.recipient.id;
@@ -162,6 +215,15 @@ function receivedMessage(event){
         break;
       case 'gif':
         sendGifMessage(senderID);
+        break;
+      case 'audio':
+        sendAudioMessage(senderID);
+        break;
+      case 'video':
+        sendVideoMessage(senderID);
+        break;
+      case 'file':
+        sendFileMessage(senderID);
         break;
       default:
         sendTextMessage(senderID,messageText);
@@ -185,6 +247,7 @@ function receivedPostback(event) {
   // let them know it was successful
   if (payload === "GET_STARTED"){
     sendTextMessage(senderID,"Welcome to the bot example. Let's get started!");
+
     sendTextMessage(senderID,"Message: \n\"img\" to receive a image message\n\"gif\" to receiva a gif message");
   }
 }
