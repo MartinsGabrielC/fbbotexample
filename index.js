@@ -162,7 +162,7 @@ function receivedMessage(event){
         sendGifMessage(senderID);
         break;
       default:
-        sendTextMessage(senderID,message);
+        sendTextMessage(senderID,messageText);
     }
   }
 }
