@@ -1,7 +1,6 @@
 const
   bodyParser = require('body-parser'),
   config = require('config'),
-  crypto = require('crypto'),
   express = require('express'),
   https = require('https'),
   request = require('request');
@@ -9,7 +8,10 @@ var app = express();
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
-app.listen((process.env.PORT || 3000));
+app.set('port', process.env.PORT || 3000);
+app.listen(app.get('port'), function(){
+  console.log('Node app is runing on port', app.get('port'));
+});
 
 // App Secret can be retrieved from the App Dashboard
 const APP_SECRET = (process.env.MESSENGER_APP_SECRET) ?
@@ -115,7 +117,7 @@ function sendImageMessage(recipientID){
       attachment: {
         type: "image",
         payload: {
-          url: SERVER_URL + "/media/a.png"
+          url: SERVER_URL + "/media/like.png"
         }
       }
     }
