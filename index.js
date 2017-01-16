@@ -147,7 +147,7 @@ function sendGifMessage(recipientID){
 function sendAudioMessage(recipientID){
   var messageData = {
     recipient: {
-      id: recipientId
+      id: recipientID
     },
     message: {
       attachment: {
@@ -165,7 +165,7 @@ function sendAudioMessage(recipientID){
 function sendVideoMessage(recipientID){
   var messageData = {
     recipient: {
-      id: recipientId
+      id: recipientID
     },
     message: {
       attachment: {
@@ -248,6 +248,6 @@ function receivedPostback(event) {
   if (payload === "GET_STARTED"){
     sendTextMessage(senderID,"Welcome to the bot example. Let's get started!");
 
-    sendTextMessage(senderID,"Message: \n\"img\" to receive a image message\n\"gif\" to receiva a gif message");
+    sendTextMessage(senderID,"Message: \n\"img\" to receive an image message\n\"gif\" to receiva a gif message\n\"audio\" to receive an audio message\n\"video\" to receive a video message\n\"file\" to receive a file");
   }
 }
