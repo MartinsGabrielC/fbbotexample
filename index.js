@@ -109,7 +109,7 @@ function sendTextMessage(recipientId, message) {
 function sendImageMessage(recipientID){
   var messageData = {
     recipient: {
-      id: recipientId
+      id: recipientID
     },
     message: {
       attachment: {
@@ -127,7 +127,7 @@ function sendImageMessage(recipientID){
 function sendGifMessage(recipientID){
   var messageData = {
     recipient: {
-      id: recipientId
+      id: recipientID
     },
     message: {
       attachment: {
