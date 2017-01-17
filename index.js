@@ -1,6 +1,6 @@
 const
   bodyParser = require('body-parser'),
-  //config = require('config'),
+  crypto = require('crypto'),
   express = require('express'),
   https = require('https'),
   request = require('request');
@@ -8,7 +8,7 @@ var app = express();
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json({verify: verifyRequestSignature}));
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 9091);
 app.listen(app.get('port'), function(){
   console.log('Node app is runing on port', app.get('port'));
 });
@@ -63,10 +63,10 @@ function verifyRequestSignature(req, res, buf) {
 
 //Server Frontpage
 app.get('/',function(req, res){
-  res.send('This is TestBot Server');
+  res.status(200).send('This is TestBot Server');
 });
 
-//Facebook Webhook
+//Facebook Webhook is sent as GET
 app.get('/webhook', function(req, res){
   if(req.query['hub.mode'] === "subscribe" && req.query['hub.verify_token'] === VALIDATION_TOKEN){
     res.status(200).send(req.query['hub.challenge']);
@@ -92,6 +92,8 @@ app.post('/webhook', function (req, res) {
           receivedMessage(messagingEvent);
         }else if(messagingEvent.postback){
           receivedPostback(messagingEvent);
+        }else if(messagingEvent.delivery){
+          receivedDeliveryConfirmation(messagingEvent);
         }else {
           console.log("Webhook received unknown messagingEvent: ", messagingEvent);
         }
@@ -100,6 +102,18 @@ app.post('/webhook', function (req, res) {
   }
   res.sendStatus(200);
 });
+
+function receivedDeliveryConfirmation(event){
+  var messageIDs = event.delivery.mids;
+  var watermark = event.delivery.watermark;
+  if(messageIDs){
+    messageIDs.forEach(function(messageID){
+      console.log("Received delivery confirmation for message: %s", messageID);
+    });
+  }
+  console.log("All message before %d were delivered.", watermark);
+
+}
 
 function sendAPI(messageData){
   request({
