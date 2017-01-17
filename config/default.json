@@ -1,6 +1,0 @@
-{
-    "appSecret": "9260d76e23d4d1856e01031535e297cb",
-    "pageAccessToken": "EAAZA1LcFfbUUBAB8KHVJ9ocgq7jZAIFr8rkNFSGVJdORu24EFkvxhKmo6C8tkAmy9Mf9n5QrlSPwIdaIZBJq5iYremt7ecfTfmsy5fCgYD2ILAiOIg4FWftzW4XkzdPqFruyfYNNvMZBQZBAMEOQ7jZAIgu233fIhxQmDDCLn7BgZDZD",
-    "validationToken": "testbot_verify_token",
-    "serverURL": "https://s3-sa-east-1.amazonaws.com/testbotfb/"
-}
