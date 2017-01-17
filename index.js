@@ -117,7 +117,8 @@ function sendImageMessage(recipientID){
       attachment: {
         type: "image",
         payload: {
-          url: SERVER_URL + "like.png"
+          url: SERVER_URL + "like.png",
+          is_reusable: true
         }
       }
     }
@@ -135,7 +136,8 @@ function sendGifMessage(recipientID){
       attachment: {
         type: "image",
         payload: {
-          url: SERVER_URL + "instagram_logo.gif"
+          url: SERVER_URL + "instagram_logo.gif",
+          is_reusable: true
         }
       }
     }
@@ -153,7 +155,8 @@ function sendAudioMessage(recipientID){
       attachment: {
         type: "audio",
         payload: {
-          url: SERVER_URL + "sample.mp3"
+          url: SERVER_URL + "sample.mp3",
+          is_reusable: true
         }
       }
     }
@@ -171,7 +174,8 @@ function sendVideoMessage(recipientID){
       attachment: {
         type: "video",
         payload: {
-          url: SERVER_URL + "allofus480.mov"
+          url: SERVER_URL + "allofus480.mov",
+          is_reusable: true
         }
       }
     }
@@ -189,7 +193,154 @@ function sendFileMessage(recipientID){
       attachment:{
         type: "file",
         payload: {
-          url: SERVER_URL + "test.txt"
+          url: SERVER_URL + "test.txt",
+          is_reusable: true
+        }
+      }
+    }
+  };
+  sendAPI(messageData);
+}
+
+function sendButtonMessage(recipientID){
+  var messageData = {
+    recipient: {
+      id: recipientID
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "button",
+          text: "What to do next?",
+          buttons: [
+            {
+              type: "web_url",
+              url: "https://github.com/MartinsGabrielC/fbbotexample",
+              title: "Github Link"
+            },
+            {
+              type: "postback",
+              title: "Postback: Let's chat!",
+              payload: "LETS_CHAT"
+            }
+          ]
+        }
+      }
+    }
+  };
+  sendAPI(messageData);
+}
+
+function sendGenericMessage(recipientID){
+  var messageData = {
+    recipient: {
+      id: recipientID
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: [{
+            title: "Oculus Rift",
+            subtitle: "The Oculus Rift is a virtual reality system that completely immerses you inside virtual worlds. Oculus Rift is available now.",
+            item_url: "https://www3.oculus.com/en-us/rift/",
+            image_url: SERVER_URL + "rift.png",
+            buttons: [{
+              type: "web_url",
+              url: "https://www3.oculus.com/en-us/rift/",
+              title: "Go to website"
+            },
+            {
+              type: "postback",
+              title: "Call Postback",
+              payload: "PAYLOAD_RIFT"
+            }],
+          },
+          {
+            title: "Oculus Touch",
+            subtitle: "Oculus Touch is a pair of tracked controllers that give you hand presence—the feeling that your virtual hands are actually your own.",
+            item_url: "https://www3.oculus.com/en-us/rift/",
+            image_url: SERVER_URL + "touch.png",
+            buttons: [{
+              type: "web_url",
+              url: "https://www3.oculus.com/en-us/rift/",
+              title: "Go to website"
+            },
+            {
+              type: "postback",
+              title: "Call postback",
+              payload: "PAYLOAD_TOUCH"
+            }]
+          }]
+        }
+      }
+    }
+  };
+  sendAPI(messageData);
+}
+
+function sendListMessage(recipientID){
+  //List supports at least 2 elements and at most 4
+  //Adding a button to each element is optional. You may only have up to 1 button per element
+  //You may have up to 1 global button
+  var messageData = {
+    recipient: {
+      id: recipientID
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "list",
+          top_element_style: "compact",
+          elements:[
+              {
+                title: "Oculus Rift",
+                image_url: SERVER_URL + "rift.png",
+                subtitle: "The Oculus Rift is a virtual reality system that completely immerses you inside virtual worlds. Oculus Rift is available now.",
+                default_action: {
+                  type: "web_url",
+                  url: "https://www3.oculus.com/en-us/rift/",
+                  messenger_extensions: "true",
+                  webview_height_ratio: "tall",
+                  fallback_url: "https://www3.oculus.com"
+                },
+                buttons: [
+                  {
+                    title: "View",
+                    type: "web_url",
+                    url: "https://www3.oculus.com/en-us/rift/",
+                    messenger_extensions: "true",
+                    webview_height_ratio: "tall",
+                    fallback_url: "https://www3.oculus.com"
+                  }
+                ]
+              },
+              {
+                title: "Oculus Touch",
+                image_url: SERVER_URL + "touch.png",
+                subtitle: "Oculus Touch is a pair of tracked controllers that give you hand presence—the feeling that your virtual hands are actually your own.",
+                buttons: [
+                  {
+                    title: "View",
+                    type: "web_url",
+                    url: "https://www3.oculus.com/en-us/rift/",
+                    messenger_extensions: "true",
+                    webview_height_ratio: "tall",
+                    fallback_url: "https://www3.oculus.com"
+                  }
+                ]
+              }
+          ],
+          buttons: [
+            {
+              title: "View More",
+              type: "postback",
+              payload: "PAYLOAD_LIST"
+            }
+          ]
         }
       }
     }
@@ -225,6 +376,15 @@ function receivedMessage(event){
       case 'file':
         sendFileMessage(senderID);
         break;
+      case 'button':
+        sendButtonMessage(senderID);
+        break;
+      case 'generic':
+        sendGenericMessage(senderID);
+        break;
+      case 'list':
+        sendListMessage(senderID);
+        break;
       default:
         sendTextMessage(senderID,messageText);
     }
@@ -246,8 +406,25 @@ function receivedPostback(event) {
   // When a postback is called, we'll send a message back to the sender to
   // let them know it was successful
   if (payload === "GET_STARTED"){
+    var tutorial = "Message: \n"
+    + "\"img\" to receive an image message\n"
+    +"\"gif\" to receive a gif message\n"
+    +"\"audio\" to receive an audio message\n"
+    +"\"video\" to receive a video message\n"
+    +"\"file\" to receive a file\n"
+    +"\"button\" to receive a button template\n"
+    +"\"generic\" to receive a generic template\n"
+    +"\"list\" to receive a list template\n"
+    +"anything else will be echo\'ed"
     sendTextMessage(senderID,"Welcome to the bot example. Let's get started!");
-
-    sendTextMessage(senderID,"Message: \n\"img\" to receive an image message\n\"gif\" to receiva a gif message\n\"audio\" to receive an audio message\n\"video\" to receive a video message\n\"file\" to receive a file");
+    sendTextMessage(senderID,tutorial);
+  }else if (payload === "LETS_CHAT"){
+    sendTextMessage(senderID,"Sure, what do you want to do next?");
+  }else if(payload === "PAYLOAD_RIFT"){
+    sendTextMessage(senderID,"Well, you just sent me the Rift payload");
+  }else if(payload === "PAYLOAD_TOUCH"){
+    sendTextMessage(senderID,"Well, you just sent me the Touch payload");
+  }else if(payload === "PAYLOAD_LIST"){
+    sendTextMessage(senderID, "If you want to know more check their website: \nhttps://www3.oculus.com")
   }
 }
